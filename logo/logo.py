@@ -11,9 +11,9 @@ from lxml import etree
 click.utils.make_default_short_help.__defaults__ = (100,)
 click.formatting.HelpFormatter.write_dl.__defaults__ = (100, 2)
 
-colors = ["standard", "light", "dark", "monochrome"]
-options = ["tagline"]
-formats = ["png", "svg"]
+colors_choices = ["standard", "light", "dark", "monochrome"]
+options_choices = ["tagline"]
+formats_choices = ["png", "svg"]
 
 with open("logo.svg") as f:
     original_logo = etree.parse(f).getroot()
@@ -47,13 +47,13 @@ def generate_filename(destination, color, options, format, width=None, height=No
     "max_content_width": 120
 })
 @click.option("-c", "--color", "colors",
-              type=click.Choice(colors), multiple=True,
+              type=click.Choice(colors_choices + ["all"]), multiple=True,
               help="Color of the logo to generate (Repeatable).")
 @click.option("-o", "--option", "options",
-              type=click.Choice(options), multiple=True,
+              type=click.Choice(options_choices), multiple=True,
               help="Additional feature to add to the logo (Repeatable, all apply at once).")
 @click.option("-f", "--format", "formats",
-              type=click.Choice(formats), multiple=True, required=True,
+              type=click.Choice(formats_choices), multiple=True, required=True,
               help="Desired image file format (Repeatable).")
 @click.option("-H", "--height", "heights",
               type=int, multiple=True,
@@ -74,7 +74,10 @@ def logo(colors, options, formats, heights, widths, no_zip):
         for tagline in original_logo.xpath("/*[local-name() = 'svg']/*[local-name() = 'g']/*[local-name() = 'g'][2]"):
             tagline.getparent().remove(tagline)
 
-    with tempfile.TemporaryDirectory() as destination:
+    if "all" in colors:
+        colors = colors_choices
+
+    with tempfile.TemporaryDirectory() as temp_dir:
         for color in colors:
             logo = copy.deepcopy(original_logo)
 
@@ -91,7 +94,7 @@ def logo(colors, options, formats, heights, widths, no_zip):
 
             if "svg" in formats:
                 # Save SVG in tempdir
-                with open(generate_filename(destination, color, options, "svg", retina=False), "w") as f:
+                with open(generate_filename(temp_dir, color, options, "svg", retina=False), "w") as f:
                     f.write(etree.tostring(logo).decode("utf-8"))
 
             if "png" in formats:
@@ -111,7 +114,7 @@ def logo(colors, options, formats, heights, widths, no_zip):
 
                     cairosvg.svg2png(
                         bytestring=etree.tostring(logo),
-                        write_to=generate_filename(destination, color, options, "png", width=width, height=height, retina=retina),
+                        write_to=generate_filename(temp_dir, color, options, "png", width=width, height=height, retina=retina),
                         **kwargs
                     )
 
@@ -121,11 +124,14 @@ def logo(colors, options, formats, heights, widths, no_zip):
                 for width in widths:
                     make_png(width=width)
                     make_png(width=width, retina=True)
+
+        destination = "./codestar_logos"
         if no_zip:
-            # TODO: Already exists
-            shutil.copytree(destination, "./codestar_logos")
+            if os.path.exists(destination):
+                shutil.rmtree(destination)
+            shutil.copytree(temp_dir, destination)
         else:
-            shutil.make_archive("./codestar_logos", "zip", destination)
+            shutil.make_archive(destination, "zip", temp_dir)
 
 
 if __name__ == "__main__":
