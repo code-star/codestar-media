@@ -62,7 +62,7 @@ def generate_filename(destination, color, options, format, width=None, height=No
               type=int, multiple=True,
               help="Desired logo width, only for non-vector formats (Repeatable).")
 @click.option("-nz", "--no-zip", is_flag=True, default=False,
-              help="Package all files in a zip archive.")
+              help="Don't package output in an archive.")
 def logo(colors, options, formats, heights, widths, no_zip):
     ratio = 2102 / 558
     if "tagline" not in options:
