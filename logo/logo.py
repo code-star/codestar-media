@@ -64,7 +64,13 @@ def generate_filename(destination, color, options, format, width=None, height=No
 @click.option("-nz", "--no-zip", is_flag=True, default=False,
               help="Package all files in a zip archive.")
 def logo(colors, options, formats, heights, widths, no_zip):
+    ratio = 2102 / 558
     if "tagline" not in options:
+        ratio = 2102 / 421
+        for root in original_logo.xpath("/*"):
+            x, y, w, h = [float(elem) for elem in root.attrib["viewBox"].split()]
+            h = w * (1 / ratio)
+            root.attrib["viewBox"] = "%g %g %g %g" % (x, y, w, h)
         for tagline in original_logo.xpath("/*[local-name() = 'svg']/*[local-name() = 'g']/*[local-name() = 'g'][2]"):
             tagline.getparent().remove(tagline)
 
@@ -93,9 +99,15 @@ def logo(colors, options, formats, heights, widths, no_zip):
                     factor = 2 if retina else 1
 
                     if width:
-                        kwargs = {"parent_width": width*factor}
+                        kwargs = {
+                            "parent_width": width * factor,
+                            "parent_height": width * factor * (1 / ratio)
+                        }
                     elif height:
-                        kwargs = {"parent_height": height*factor}
+                        kwargs = {
+                            "parent_width": height * factor * ratio,
+                            "parent_height": height * factor
+                        }
 
                     cairosvg.svg2png(
                         bytestring=etree.tostring(logo),
@@ -104,12 +116,13 @@ def logo(colors, options, formats, heights, widths, no_zip):
                     )
 
                 for height in heights:
-                    make_png(width=height)
-                    make_png(width=height, retina=True)
+                    make_png(height=height)
+                    make_png(height=height, retina=True)
                 for width in widths:
                     make_png(width=width)
                     make_png(width=width, retina=True)
         if no_zip:
+            # TODO: Already exists
             shutil.copytree(destination, "./codestar_logos")
         else:
             shutil.make_archive("./codestar_logos", "zip", destination)
