@@ -13,6 +13,7 @@ You will need Python 3 (`brew install python3`).
 Installing the dependencies:
 
 ```bash
+brew install cairo
 pip3 install -r requirements.txt
 ```
 
