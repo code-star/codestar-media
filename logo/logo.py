@@ -11,7 +11,7 @@ from lxml import etree
 click.utils.make_default_short_help.__defaults__ = (100,)
 click.formatting.HelpFormatter.write_dl.__defaults__ = (100, 2)
 
-colors_choices = ["standard", "light", "dark", "monochrome"]
+colors_choices = ["standard", "light", "dark", "monochrome", "grey"]
 options_choices = ["tagline"]
 formats_choices = ["png", "svg"]
 
@@ -89,6 +89,8 @@ def logo(colors, options, formats, heights, widths, no_zip):
                 style = generate_style(right_opacity="1.00")
             elif color == "monochrome":
                 style = generate_style(left_color="#000000", right_color="#000000", right_opacity="1.00")
+            elif color == "grey":
+                style = generate_style(right_color="#9b9b9b", right_opacity="1.00")
 
             logo[0].text = style
 
