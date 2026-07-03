@@ -3,7 +3,7 @@
 
 ---
 
-# New Codestar Logo Media Repo
+# Codestar Media and Branding
 
 ## Installing
 
@@ -39,3 +39,12 @@ rm -rf logos
 poetry run python scripts/process.py
 poetry run python scripts/convert.py
 ```
+
+## Spelling of Codestar
+
+It's **Codestar**, not:
+
+- ~~CODESTAR~~
+- ~~CODE.STAR~~
+- ~~Code.Star~~
+- ~~Code Star~~
